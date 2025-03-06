@@ -75,6 +75,31 @@ This repository contains a simple Python Flask application with complete DevOps 
    docker run -p 5000:5000 your-dockerhub-username/python-app:latest
    ```
 
+### Pushing to Docker Hub Registry
+
+1. Log in to Docker Hub:
+   ```bash
+   docker login
+   ```
+
+2. Tag your image with your Docker Hub username:
+   ```bash
+   docker tag portal-dashboard YOUR_DOCKERHUB_USERNAME/portal-dashboard:latest
+   ```
+
+3. Push the image to Docker Hub:
+   ```bash
+   docker push YOUR_DOCKERHUB_USERNAME/portal-dashboard:latest
+   ```
+
+### Pulling and Running from Docker Hub
+
+After pushing, others can run your image using:
+   ```bash
+   docker pull YOUR_DOCKERHUB_USERNAME/portal-dashboard:latest
+   docker run -d -p 5000:5000 YOUR_DOCKERHUB_USERNAME/portal-dashboard:latest
+   ```
+
 ## Azure DevOps Setup
 
 1. Create a new project in Azure DevOps
