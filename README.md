@@ -1,4 +1,4 @@
-# Python Application DevOps Practice
+# Portal: A Python Application
 
 This repository contains a simple Python Flask application with complete DevOps setup using Azure DevOps, Docker, and Kubernetes.
 
