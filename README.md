@@ -11,24 +11,19 @@ This repository contains a simple Python Flask application with complete DevOps 
 - Docker Hub account
 - Local Kubernetes cluster (kubeadm)
 
-## Local Development
 
-1. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-2. Run locally:
-   ```bash
-   python app.py
-   ```
-
-## Local Testing Instructions
+## Getting Started
 
 1. Clone the repository:
    ```bash
-   git clone <repository-url>
-   cd portal
+   git clone https://techiebricks@dev.azure.com/techiebricks/Portal/_git/Portal
+   cd Portal
+   ```
+
+1. Clone the repository (If ssh Access):
+   ```bash
+   git clone git@ssh.dev.azure.com:v3/techiebricks/Portal/Portal
+   cd Portal
    ```
 
 2. Create and activate a virtual environment (recommended):
@@ -63,7 +58,7 @@ This repository contains a simple Python Flask application with complete DevOps 
    - Press `Ctrl+C` in the terminal
    - Deactivate virtual environment: `deactivate`
 
-## Docker Operations
+## Build Docker image
 
 1. Build image:
    ```bash
