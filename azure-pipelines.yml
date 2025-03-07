@@ -9,7 +9,7 @@ steps:
   displayName: 'Build and Push Docker Image'
   inputs:
     containerRegistry: 'DockerHubConnection'
-    repository: '$(dockerHubUsername)/python-app'
+    repository: '$(jahangir842)/portal'
     command: 'buildAndPush'
     Dockerfile: '**/Dockerfile'
     tags: |
