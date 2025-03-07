@@ -26,9 +26,9 @@ This repository contains a simple Python Flask application with complete DevOps 
    cd Portal
    ```
 
-2. Create and activate a virtual environment (recommended):
+2. Create and activate a virtual environment for linux (recommended):
    ```bash
-   python -m venv venv
+   python3 -m venv venv
    source venv/bin/activate  # On Windows use: venv\Scripts\activate
    ```
 
