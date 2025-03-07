@@ -11,13 +11,11 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application code and templates
 # Note: This is done after installing dependencies to leverage cache
-COPY app.py .
-COPY templates ./templates
-COPY static ./static
+COPY . .
 
 # Expose port 5000 for the Flask application
 EXPOSE 5000
 
-# Command to run the application
-# Using array syntax for better signal handling
-CMD ["python", "app.py"]
+# Use Gunicorn instead of Flask development server
+# 4 worker processes, binding to all interfaces on port 5000
+CMD ["gunicorn", "--workers=4", "--bind=0.0.0.0:5000", "wsgi:app"]

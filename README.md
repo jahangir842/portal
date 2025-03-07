@@ -1,120 +1,113 @@
-# Portal: A Python Flask Application.
+# Flask Web Portal
 
-This repository contains a simple Python Flask application with complete DevOps setup using Azure DevOps, Docker, and Kubernetes.
+A production-ready Flask web application using Gunicorn as WSGI server and Docker for containerization.
 
-## Prerequisites
+## Project Structure
 
-- Python 3.x
+```
+portal/
+├── app.py              # Main Flask application
+├── wsgi.py            # WSGI entry point
+├── requirements.txt   # Python dependencies
+├── Dockerfile        # Docker configuration
+├── static/          # Static files (CSS, JS, images)
+└── templates/       # HTML templates
+```
+
+## Requirements
+
 - Docker
-- kubectl
-- Azure DevOps account
-- Docker Hub account
-- Local Kubernetes cluster (kubeadm)
+- Python 3.10+ (for local development)
 
+## Quick Start
 
-## Getting Started
+### Using Docker
 
-1. Clone the repository:
+1. Build the Docker image:
    ```bash
-   git clone https://techiebricks@dev.azure.com/techiebricks/Portal/_git/Portal
-   cd Portal
+   docker build -t portal .
    ```
 
-1. Clone the repository (If ssh Access):
+2. Run the container:
    ```bash
-   git clone git@ssh.dev.azure.com:v3/techiebricks/Portal/Portal
-   cd Portal
+   docker run -p 5000:5000 portal
    ```
 
+3. Access the application at http://localhost:5000
+
+### Local Development
+
+1. Create a virtual environment:
 2. Create and activate a virtual environment for linux (recommended):
    ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
    python3 -m venv venv
    source venv/bin/activate  # On Windows use: venv\Scripts\activate
    ```
 
-3. Install dependencies:
+2. Install dependencies:
    ```bash
    pip install -r requirements.txt
    ```
 
-4. Run the application:
+3. Run the development server:
    ```bash
    python app.py
    ```
 
-5. Access the portal:
-   - Open your browser and navigate to `http://localhost:5000`
-   - You should see the dashboard with:
-     - Quick links to various services
-     - Current time display
-     - Interactive calendar widget
+## Production Deployment
 
-6. Testing different features:
-   - Click on the quick links to verify they open in new tabs
-   - Check if the calendar widget responds to navigation
-   - Verify the current time is displayed correctly
+The application uses Gunicorn as the WSGI server with the following configuration:
+- 4 worker processes
+- Binds to all interfaces on port 5000
+- WSGI entry point: wsgi.py
 
-7. Stop the application:
-   - Press `Ctrl+C` in the terminal
-   - Deactivate virtual environment: `deactivate`
+## Architecture
 
-## Build Docker image
+### WSGI (Web Server Gateway Interface)
+WSGI is a specification that describes how a web server communicates with web applications in Python. It provides a standard interface between web servers and Python web applications/frameworks.
 
-1. Build image:
-   ```bash
-   docker build -t your-dockerhub-username/python-app:latest .
-   ```
+In this project:
+- `wsgi.py` serves as the WSGI entry point
+- Gunicorn acts as the WSGI server
+- Flask application is the WSGI application
 
-2. Test locally:
-   ```bash
-   docker run -p 5000:5000 your-dockerhub-username/python-app:latest
-   ```
+### Using Nginx as Reverse Proxy
 
-### Pushing to Docker Hub Registry
+While Gunicorn is excellent for serving Python applications, it's recommended to use Nginx as a reverse proxy in production for:
+- Better static file handling
+- SSL/TLS termination
+- Load balancing
+- Request buffering
+- Security features
 
-1. Log in to Docker Hub:
-   ```bash
-   docker login
-   ```
+To use Nginx with this application:
 
-2. Tag your image with your Docker Hub username:
-   ```bash
-   docker tag portal-dashboard YOUR_DOCKERHUB_USERNAME/portal-dashboard:latest
-   ```
+1. Build and run the Flask container:
+```bash
+docker run -p 8000:5000 --name flask_app portal
+```
 
-3. Push the image to Docker Hub:
-   ```bash
-   docker push YOUR_DOCKERHUB_USERNAME/portal-dashboard:latest
-   ```
+2. Run Nginx container:
+```bash
+docker run -p 80:80 --link flask_app:flask_app nginx
+```
 
-### Pulling and Running from Docker Hub
+## Dependencies
 
-After pushing, others can run your image using:
-   ```bash
-   docker pull YOUR_DOCKERHUB_USERNAME/portal-dashboard:latest
-   docker run -d -p 5000:5000 YOUR_DOCKERHUB_USERNAME/portal-dashboard:latest
-   ```
+- Flask 2.3.3
+- Gunicorn 21.2.0
+- Python-dateutil 2.8.2
 
-## Azure DevOps Setup
+## Contributing
 
-1. Create a new project in Azure DevOps
-2. Import this repository
-3. Create a Docker Hub service connection named 'DockerHubConnection'
-4. Update the pipeline variable 'dockerHubUsername'
-5. Run the pipeline
+1. Fork the repository
+2. Create a feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a Pull Request
 
-## Kubernetes Deployment
+## License
 
-1. Update the image name in deployment.yaml
-2. Deploy:
-   ```bash
-   kubectl apply -f deployment.yaml
-   ```
-
-3. Verify:
-   ```bash
-   kubectl get pods
-   kubectl get svc
-   ```
-
-Access the application at http://node-ip:nodeport
+This project is licensed under the MIT License.
