@@ -1,0 +1,14 @@
+name: jagz
+channels:
+  - https://repo.anaconda.com/pkgs/main
+  - https://repo.anaconda.com/pkgs/r
+prefix: /home/jahangir/miniconda3/envs/jagz
+dependencies:
+  - python=3.10  # Adjust Python version if needed
+  - flask=2.3.3
+  - python-dateutil=2.8.2
+  - pip
+  - pip:
+      - gunicorn==21.2.0
+
+

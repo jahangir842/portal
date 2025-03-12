@@ -49,6 +49,55 @@ The application uses Gunicorn as the WSGI server with the following configuratio
 - Binds to all interfaces on port 5000
 - WSGI entry point: wsgi.py
 
+## Running with WSGI Server
+
+### Direct Execution
+1. Make the run script executable:
+```bash
+chmod +x run_wsgi.sh
+```
+
+2. Run directly with Gunicorn:
+```bash
+./run_wsgi.sh
+```
+
+Or manually:
+```bash
+# Basic usage
+gunicorn wsgi:app
+
+# With configuration
+gunicorn --workers=4 --bind=0.0.0.0:5000 wsgi:app
+
+# With additional options
+gunicorn --workers=4 \
+         --bind=0.0.0.0:5000 \
+         --access-logfile=- \
+         --error-logfile=- \
+         --reload \  # Auto-reload on code changes
+         wsgi:app
+```
+
+### Through Docker
+```bash
+# Build and run with Docker
+docker build -t portal .
+docker run -p 5000:5000 portal
+
+# Or using Docker Compose
+docker-compose up
+```
+
+### Common Gunicorn Options
+- `--workers`: Number of worker processes (2-4 x NUM_CORES)
+- `--bind`: Address and port to bind
+- `--reload`: Auto-reload on code changes (development only)
+- `--access-logfile`: Access log file location
+- `--error-logfile`: Error log file location
+- `--timeout`: Worker timeout in seconds (default: 30)
+- `--worker-class`: Worker class to use (default: sync)
+
 ## Architecture
 
 ### WSGI (Web Server Gateway Interface)
@@ -79,6 +128,11 @@ docker run -p 8000:5000 --name flask_app portal
 ```bash
 docker run -p 80:80 --link flask_app:flask_app nginx
 ```
+
+
+### SSL Installation:
+
+https://github.com/jahangir842/linux-notes/blob/main/encryption-ssl-etc/Self-Signed-SSL-Certificate.md
 
 ## Docker Deployment
 
