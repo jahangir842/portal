@@ -79,15 +79,45 @@ gunicorn --workers=4 \
          wsgi:app
 ```
 
-### Through Docker
-```bash
-# Build and run with Docker
-docker build -t portal .
-docker run -p 5000:5000 portal
+### **Using Docker to Build and Run the Application**  
 
-# Or using Docker Compose
-docker-compose up
+#### **1. Build and Run with Docker**  
+```bash
+# Build the Docker image with a specific tag
+docker build -t jahangir842/portal:v1.0 .
+
+# Run the container, mapping port 5000 on the host to port 5000 in the container
+docker run -d --name portal -p 5000:5000 jahangir842/portal:v1.0
 ```
+- The `-d` flag runs the container in detached mode.  
+- The `--name portal` assigns a custom name to the container.
+- While building, change the version number as required.
+
+To check running containers:  
+```bash
+docker ps
+```
+
+To stop and remove the container:  
+```bash
+docker stop portal && docker rm portal
+```
+
+---
+
+#### **2. Run with Docker Compose**  
+If your project includes a `docker-compose.yml` file, you can start the application using Docker Compose:  
+```bash
+docker-compose up -d
+```
+- The `-d` flag runs services in detached mode.  
+
+To stop and remove containers:  
+```bash
+docker-compose down
+```
+
+Would you like me to add instructions for pushing the image to Docker Hub? 🚀
 
 ### Common Gunicorn Options
 - `--workers`: Number of worker processes (2-4 x NUM_CORES)
