@@ -356,6 +356,62 @@ To run Trivy locally on your images:
 docker run aquasec/trivy image jahangir842/portal:latest
 ```
 
+## Azure Deployment
+
+### Prerequisites
+
+1. Azure CLI installed
+2. Azure subscription
+3. Azure Container Registry (ACR)
+
+### Setup Azure Resources
+
+```bash
+# Login to Azure
+az login
+
+# Create resource group
+az group create --name portal-rg --location eastus
+
+# Create container registry
+az acr create --resource-group portal-rg \
+    --name <your-registry-name> --sku Basic
+
+# Enable admin account
+az acr update -n <your-registry-name> --admin-enabled true
+
+# Get credentials
+az acr credential show --name <your-registry-name>
+```
+
+### Configure GitHub Secrets
+
+Add these secrets to your GitHub repository:
+
+- AZURE_CREDENTIALS
+- AZURE_CONTAINER_REGISTRY
+- AZURE_REGISTRY_USERNAME
+- AZURE_REGISTRY_PASSWORD
+
+### Manual Deployment
+
+```bash
+# Login to Azure Container Registry
+az acr login --name <your-registry-name>
+
+# Build and push image
+docker-compose -f docker-compose.azure.yml build
+docker-compose -f docker-compose.azure.yml push
+
+# Deploy to Azure Container Apps
+az containerapp create \
+    --name portal-app \
+    --resource-group portal-rg \
+    --image <your-registry-name>.azurecr.io/portal:latest \
+    --target-port 5000 \
+    --ingress external
+```
+
 ## Contributing
 
 1. Fork the repository

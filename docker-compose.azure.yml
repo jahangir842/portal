@@ -1,0 +1,16 @@
+version: "3.8"
+services:
+  web:
+    image: ${AZURE_CONTAINER_REGISTRY}.azurecr.io/portal:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "80:5000"
+    environment:
+      - FLASK_ENV=production
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 1G
