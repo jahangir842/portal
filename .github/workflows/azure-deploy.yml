@@ -1,0 +1,32 @@
+name: Azure Deployment
+
+on:
+  workflow_run:
+    workflows: ["CI/CD Pipeline"]
+    types:
+      - completed
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Azure login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Deploy to Azure Container Apps
+        uses: azure/container-apps-deploy-action@v1
+        with:
+          appSourcePath: ${{ github.workspace }}
+          acrName: ${{ secrets.AZURE_CONTAINER_REGISTRY }}
+          acrUsername: ${{ secrets.AZURE_REGISTRY_USERNAME }}
+          acrPassword: ${{ secrets.AZURE_REGISTRY_PASSWORD }}
+          containerAppName: "portal-app"
+          resourceGroup: "portal-rg"
+          imageToDeploy: ${{ secrets.AZURE_CONTAINER_REGISTRY }}.azurecr.io/portal:${{ github.sha }}
