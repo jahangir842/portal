@@ -18,6 +18,7 @@ htmlcov/
 .vscode/
 
 # Certificates
+certs/
 certs/*.key
 certs/*.csr
 certs/*.crt
