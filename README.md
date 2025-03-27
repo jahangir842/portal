@@ -357,8 +357,50 @@ docker pull jahangir842/portal:<commit-sha>
 4. Push to the branch
 5. Create a Pull Request
 
+### Creating a Pull Request from Terminal
+
+1. Install GitHub CLI (if not installed):
+
+```bash
+sudo apt install gh
+```
+
+2. Authenticate with GitHub:
+
+```bash
+gh auth login
+```
+
+3. Create and push your changes:
+
+```bash
+git checkout -b feature/your-feature-name
+git add .
+git commit -m "Your commit message"
+git push -u origin feature/your-feature-name
+```
+
+4. Create Pull Request using GitHub CLI:
+
+```bash
+gh pr create --title "Your PR title" --body "Description of your changes"
+```
+
+5. Check PR status:
+
+```bash
+gh pr status
+```
+
+6. Additional PR commands:
+
+```bash
+gh pr view        # View PR details
+gh pr list        # List open PRs
+gh pr checkout    # Checkout a PR locally
+gh pr review      # Review a PR
+```
+
 ## License
 
 This project is licensed under the MIT License.
-
-On branch feature.
