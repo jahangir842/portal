@@ -336,17 +336,24 @@ This project uses GitHub Actions for continuous integration and delivery:
 - Builds and pushes Docker image on merge to main
 - Tags images with both `latest` and git commit SHA
 - Uses Docker Hub as container registry
+- Performs security scanning with Trivy for:
+  - Critical and high severity vulnerabilities
+  - Known vulnerabilities in container image
+  - Fails build if critical/high severity issues found
 
-To use the latest published image:
+### Security Scanning
+
+The CI pipeline includes Trivy vulnerability scanner which:
+
+- Scans container images for security vulnerabilities
+- Checks for critical and high severity issues
+- Fails the build if serious vulnerabilities are found
+- Ignores unfixed vulnerabilities to reduce false positives
+
+To run Trivy locally on your images:
 
 ```bash
-docker pull jahangir842/portal:latest
-```
-
-For a specific version, use the commit SHA:
-
-```bash
-docker pull jahangir842/portal:<commit-sha>
+docker run aquasec/trivy image jahangir842/portal:latest
 ```
 
 ## Contributing
