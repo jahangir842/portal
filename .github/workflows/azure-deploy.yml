@@ -14,11 +14,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-
-      - name: Azure login
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
       - name: Print Azure credentials
         env:
           AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
@@ -27,6 +22,10 @@ jobs:
         # Be careful with this in production as it may expose sensitive information.
         # In a real-world scenario, you would not want to print sensitive information.
         run: echo "$AZURE_CREDENTIALS"
+      - name: Azure login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       - name: Deploy to Azure Container Apps
         uses: azure/container-apps-deploy-action@v1
