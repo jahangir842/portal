@@ -41,3 +41,12 @@ jobs:
           tags: |
             jahangir842/portal:latest
             jahangir842/portal:${{ github.sha }}
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: "jahangir842/portal:latest"
+          format: "table"
+          exit-code: "1"
+          ignore-unfixed: true
+          severity: "CRITICAL,HIGH"
