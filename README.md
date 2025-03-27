@@ -1,5 +1,7 @@
 # Flask Web Portal
 
+![Docker Image CI/CD](https://github.com/jahangir842/portal/actions/workflows/build-docker-image.yml/badge.svg)
+
 A production-ready Flask web application using Gunicorn as WSGI server and Docker for containerization.
 
 ## Project Structure
@@ -325,6 +327,27 @@ docker run -e FLASK_ENV=production -e PORT=8000 -p 8000:8000 portal:latest
 - Flask 2.3.3
 - Gunicorn 21.2.0
 - Python-dateutil 2.8.2
+
+## CI/CD Pipeline
+
+This project uses GitHub Actions for continuous integration and delivery:
+
+- Automatically runs tests on pull requests
+- Builds and pushes Docker image on merge to main
+- Tags images with both `latest` and git commit SHA
+- Uses Docker Hub as container registry
+
+To use the latest published image:
+
+```bash
+docker pull jahangir842/portal:latest
+```
+
+For a specific version, use the commit SHA:
+
+```bash
+docker pull jahangir842/portal:<commit-sha>
+```
 
 ## Contributing
 
