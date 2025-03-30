@@ -14,14 +14,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - name: Print Azure credentials
-        env:
-          AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
-        # This is for debugging purposes only. Remove in production.
-        # It prints the Azure credentials to the console.
-        # Be careful with this in production as it may expose sensitive information.
-        # In a real-world scenario, you would not want to print sensitive information.
-        run: echo "$AZURE_CREDENTIALS"
       - name: Azure login
         uses: azure/login@v1
         with:

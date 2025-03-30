@@ -13,9 +13,9 @@ __pycache__/
 .pytest_cache/
 .coverage
 htmlcov/
+temp_auto_push.bat
 
 # VS Code settings
-.vscode/
 
 # Certificates
 certs/
@@ -29,3 +29,5 @@ certs/*.crt
 # System files
 .DS_Store
 Thumbs.db
+.gitignore
+branch_structure.json
