@@ -37,3 +37,4 @@ jobs:
           containerAppName: "portal-app"
           resourceGroup: "portal-rg"
           imageToDeploy: ${{ secrets.AZURE_CONTAINER_REGISTRY }}.azurecr.io/portal:${{ github.sha }}
+          targetPort: 5000
