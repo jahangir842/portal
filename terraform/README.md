@@ -1,106 +1,80 @@
-Below is a Terraform example to create an Azure Container Registry (ACR), optionally with a private endpoint (if you want private access only).
+## Here's a complete terraform main.tf for your project that creates:
+
+- Resource Group
+- Azure Container Registry (ACR) with admin_enabled = true
+
+**Optional:** You can extend this later to include Azure Container Apps or Private Endpoints
+
 
 
 ---
 
-Option 1: Public ACR (simpler for GitHub Actions CI/CD)
+main.tf
 
+'''bash
 provider "azurerm" {
   features {}
 }
 
+# Resource Group
 resource "azurerm_resource_group" "rg" {
   name     = "portal-rg"
   location = "East US"
 }
 
+# Azure Container Registry (public access with login required)
 resource "azurerm_container_registry" "acr" {
-  name                = "portalacr2025" # must be globally unique
+  name                = "portalacr2025"  # must be globally unique
   resource_group_name = azurerm_resource_group.rg.name
   location            = azurerm_resource_group.rg.location
-  sku                 = "Basic" # options: Basic, Standard, Premium
-  admin_enabled       = true    # enables admin username/password login
+  sku                 = "Basic"          # Standard or Premium for production
+  admin_enabled       = true             # allows using username/password in CI/CD
 }
 
-This creates a public ACR with admin credentials enabled. You can fetch credentials in your pipeline using Azure CLI.
+# Output login details (optional)
+output "acr_login_server" {
+  value = azurerm_container_registry.acr.login_server
+}
 
+output "acr_admin_username" {
+  value = azurerm_container_registry.acr.admin_username
+  sensitive = true
+}
+
+output "acr_admin_password" {
+  value     = azurerm_container_registry.acr.admin_password
+  sensitive = true
+}
+
+'''
 
 ---
 
-Option 2: Private ACR with Private Endpoint (for high security)
+**Usage:**
 
-resource "azurerm_virtual_network" "vnet" {
-  name                = "portal-vnet"
-  location            = azurerm_resource_group.rg.location
-  resource_group_name = azurerm_resource_group.rg.name
-  address_space       = ["10.0.0.0/16"]
-}
-
-resource "azurerm_subnet" "subnet" {
-  name                 = "private-endpoint-subnet"
-  resource_group_name  = azurerm_resource_group.rg.name
-  virtual_network_name = azurerm_virtual_network.vnet.name
-  address_prefixes     = ["10.0.1.0/24"]
-
-  delegation {
-    name = "delegation"
-    service_delegation {
-      name = "Microsoft.ContainerRegistry/registries"
-      actions = [
-        "Microsoft.Network/virtualNetworks/subnets/action"
-      ]
-    }
-  }
-}
-
-resource "azurerm_private_endpoint" "acr_pe" {
-  name                = "acr-private-endpoint"
-  location            = azurerm_resource_group.rg.location
-  resource_group_name = azurerm_resource_group.rg.name
-  subnet_id           = azurerm_subnet.subnet.id
-
-  private_service_connection {
-    name                           = "acr-priv-conn"
-    private_connection_resource_id = azurerm_container_registry.acr.id
-    subresource_names              = ["registry"]
-    is_manual_connection           = false
-  }
-}
-
-resource "azurerm_private_dns_zone" "acr_dns" {
-  name                = "privatelink.azurecr.io"
-  resource_group_name = azurerm_resource_group.rg.name
-}
-
-resource "azurerm_private_dns_zone_virtual_network_link" "link" {
-  name                  = "acr-dns-link"
-  resource_group_name   = azurerm_resource_group.rg.name
-  private_dns_zone_name = azurerm_private_dns_zone.acr_dns.name
-  virtual_network_id    = azurerm_virtual_network.vnet.id
-}
-
-resource "azurerm_private_dns_a_record" "acr_dns_record" {
-  name                = azurerm_container_registry.acr.name
-  zone_name           = azurerm_private_dns_zone.acr_dns.name
-  resource_group_name = azurerm_resource_group.rg.name
-  ttl                 = 300
-  records             = [azurerm_private_endpoint.acr_pe.private_service_connection[0].private_ip_address]
-}
+1. Save this as main.tf
 
 
----
+2. Run:
 
-Notes:
+'''bash
+terraform init
+terraform apply
+'''
 
-If you use admin_enabled = true, you can log in from GitHub Actions using docker/login-action with username and password.
 
-For private access (Premium SKU), GitHub-hosted runners will not work unless they are inside your VNet.
+3. Outputs will include the ACR login server, username, and password — great for using in your GitHub Actions CI/CD.
 
-The name must be globally unique for the registry.
 
 
 
 ---
 
-Want to combine this with Terraform to create the Azure Container App too?
+## Next Steps (Optional):
+
+- Add Azure Container App
+- Lock ACR to private network access
+- Use managed identity instead of admin creds
+
+
 
