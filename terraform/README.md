@@ -1,4 +1,6 @@
-## Here's a complete terraform main.tf for your project that creates:
+## Terraform Guide
+
+#### Here's a complete terraform main.tf for your project that creates:
 
 - Resource Group
 - Azure Container Registry (ACR) with admin_enabled = true
@@ -9,7 +11,7 @@
 
 ---
 
-main.tf
+## main.tf
 
 '''bash
 provider "azurerm" {
