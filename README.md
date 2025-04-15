@@ -16,6 +16,61 @@ portal/
 └── templates/       # HTML templates
 ```
 
+
+---
+
+## Future Structure:
+```bash
+project-root/
+│
+├── flask-app/                      # Flask application code
+│   ├── app/                        # Main application package
+│   │   ├── __init__.py             # Application factory
+│   │   ├── models.py               # Database models
+│   │   ├── routes/                 # Blueprints/routes
+│   │   ├── static/                 # Static files (CSS, JS, images)
+│   │   ├── templates/              # Jinja2 templates
+│   │   └── utils.py                # Utility functions
+│   ├── tests/                      # Test cases
+│   ├── requirements.txt            # Python dependencies
+│   ├── config.py                   # Configuration settings
+│   └── wsgi.py                     # WSGI entry point
+│
+├── infrastructure/                 # Terraform infrastructure code
+│   ├── modules/                    # Reusable Terraform modules
+│   │   ├── network/                # Networking components
+│   │   ├── compute/                # Server instances
+│   │   └── database/               # Database setup
+│   ├── environments/                # Environment-specific configs
+│   │   ├── dev/                    # Development environment
+│   │   ├── staging/                # Staging environment
+│   │   └── prod/                   # Production environment
+│   └── main.tf                     # Root Terraform configuration
+│
+├── provisioning/                   # Ansible playbooks and roles
+│   ├── playbooks/
+│   │   ├── deploy-flask.yml        # Flask deployment playbook
+│   │   ├── setup-server.yml        # Base server setup playbook
+│   │   └── configure-db.yml        # Database configuration playbook
+│   ├── roles/
+│   │   ├── common/                 # Common server setup
+│   │   ├── nginx/                  # Nginx configuration
+│   │   ├── flask-app/              # Flask-specific setup
+│   │   └── postgresql/             # PostgreSQL setup
+│   ├── inventory/                  # Inventory files
+│   │   ├── dev                     # Dev inventory
+│   │   ├── staging                 # Staging inventory
+│   │   └── prod                    # Production inventory
+│   └── group_vars/                 # Group variables
+│
+├── scripts/                        # Helper scripts
+├── .gitignore                      # Git ignore rules
+├── README.md                       # Project documentation
+└── Makefile                        # Common tasks automation
+
+```
+
+
 ## Requirements
 
 - Docker
