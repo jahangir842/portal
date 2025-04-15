@@ -8,7 +8,6 @@
 **Optional:** You can extend this later to include Azure Container Apps or Private Endpoints
 
 
-
 ---
 
 ## main.tf
