@@ -12,7 +12,7 @@
 
 ## main.tf
 
-'''bash
+```bash
 provider "azurerm" {
   features {}
 }
@@ -47,7 +47,7 @@ output "acr_admin_password" {
   sensitive = true
 }
 
-'''
+```
 
 ---
 
@@ -58,10 +58,10 @@ output "acr_admin_password" {
 
 2. Run:
 
-'''bash
+```bash
 terraform init
 terraform apply
-'''
+```
 
 
 3. Outputs will include the ACR login server, username, and password — great for using in your GitHub Actions CI/CD.
