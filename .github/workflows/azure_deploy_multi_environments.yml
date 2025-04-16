@@ -1,4 +1,4 @@
-name: Azure Deployment
+name: Azure Deployment to Multi Environments
 
 on:
   push:
