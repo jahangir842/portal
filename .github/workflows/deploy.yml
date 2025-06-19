@@ -1,9 +1,6 @@
 name: Deploy to Minikube
 
 on:
-  push:
-    branches:
-      - main  # Change to match the branch for production
   workflow_dispatch:
     inputs:
       environment:
@@ -13,32 +10,18 @@ on:
 
 jobs:
   deploy:
-    runs-on: self-hosted  # Minikube must be accessible here
+    runs-on: self-hosted  # Must be a runner that has access to Minikube
     environment:
       name: ${{ github.event.inputs.environment }}
-    
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Set up Docker
-      uses: docker/setup-buildx-action@v3
-
-    - name: Build Docker image
-      run: |
-        docker build -t jahangir842/portal:${{ github.sha }} .
-    
-    - name: Push to Docker Hub
-      run: |
-        echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u jahangir842 --password-stdin
-        docker tag jahangir842/portal:${{ github.sha }} jahangir842/portal:latest
-        docker push jahangir842/portal:latest
-        docker push jahangir842/portal:${{ github.sha }}
-
-    - name: Set up kubectl
+    - name: Set up Minikube context
       run: |
         minikube update-context
-        kubectl get nodes
+        kubectl cluster-info
 
     - name: Deploy to Kubernetes
       run: |
