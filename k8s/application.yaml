@@ -1,0 +1,23 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Allication
+metadata:
+  name: myapp-argo-application
+  namespace: argocd
+spec:
+  project: default
+
+  source:
+    repoURL: https://github.com/jahangir842/portal.git
+    targetPort: HEAD 
+    path: k8s
+  destination:
+     server: https://kubernetes.default.svc
+     namespace: portal
+
+  syncPolicy:
+    syncOptions:
+    - CreateNamespace=true
+    
+    automated:
+      selfHeal: true
+      prune: true
