@@ -1,5 +1,5 @@
 apiVersion: argoproj.io/v1alpha1
-kind: Allication
+kind: Application
 metadata:
   name: myapp-argo-application
   namespace: argocd
