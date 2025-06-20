@@ -10,4 +10,4 @@ spec:
   - protocol: TCP
     port: 8000        # Port users will access
     targetPort: 5000  # Port exposed by the container
-    nodePort: 30080   # Optional, explicit nodePort
+    nodePort: 30081   # Optional, explicit nodePort
