@@ -5,7 +5,8 @@ metadata:
 spec:
   selector:
     app: portal
-  type: NodePort
+  # type: NodePort
+  type: LoadBalancer
   ports:
   - protocol: TCP
     port: 8000        # Port users will access
