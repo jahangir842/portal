@@ -1,6 +1,6 @@
 # Multi-environment Azure deployment workflow
 # Supports automatic deployment to dev and manual deployment to staging/production
-name: Azure Deployment to Multi Environments
+name: Deploy to Azure Container App Multi Environments
 
 # Trigger conditions for the workflow
 on:
