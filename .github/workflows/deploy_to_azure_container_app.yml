@@ -1,115 +1,46 @@
-# Multi-environment Azure deployment workflow
-# Supports automatic deployment to dev and manual deployment to staging/production
-name: Deploy to Azure Container App Multi Environments
+name: Deploy to Development
 
-# Trigger conditions for the workflow
 on:
-  # Automatic deployment to development on main branch pushes
   push:
-    branches:
-      - main
-  
-  # Manual deployment with environment selection
+    branches: [develop, main]
   workflow_dispatch:
-    inputs:
-      environment:
-        description: "Choose the environment to deploy"
-        required: true
-        type: choice
-        options:
-          - development
-          - staging
-          - production
+
+env:
+  AZURE_RESOURCE_GROUP: devops-rg
+  CONTAINER_APP_NAME: portal
+  DOCKER_IMAGE_NAME: jahangir842/portal
 
 jobs:
-  # Development deployment job
-  # Runs automatically on main branch pushes OR manual trigger for dev environment
-  deploy-dev:
-    if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'development' || github.ref == 'refs/heads/main' }}
-    name: Deploy to Development
+  deploy:
     runs-on: ubuntu-latest
-    environment: development  # GitHub environment for approval gates and secrets
+    environment: development
+    
     steps:
-      # Get the source code from repository
-      - name: Checkout Code
-        uses: actions/checkout@v4
-      
-      # Authenticate with Azure using service principal credentials
-      - name: Azure Login
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}  # Azure service principal JSON
-      
-      # Deploy container to Azure Container Apps in development environment
-      - name: Deploy to Azure Container App - Dev
-        uses: azure/container-apps-deploy-action@v1
-        with:
-          appSourcePath: ${{ github.workspace }}  # Source code path
-          acrName: ${{ secrets.AZURE_CONTAINER_REGISTRY }}  # Azure Container Registry name
-          acrUsername: ${{ secrets.AZURE_REGISTRY_USERNAME }}  # ACR username
-          acrPassword: ${{ secrets.AZURE_REGISTRY_PASSWORD }}  # ACR password
-          containerAppName: portal-app-dev  # Development container app name
-          resourceGroup: portal-rg-dev  # Development resource group
-          imageToDeploy: ${{ secrets.AZURE_CONTAINER_REGISTRY }}.azurecr.io/portal:${{ github.sha }}  # Image with commit SHA tag
-          targetPort: 5000  # Application port
+    - name: Checkout code
+      uses: actions/checkout@v4
 
-  # Staging deployment job
-  # Only runs when manually triggered with staging environment selected
-  deploy-staging:
-    if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'staging' }}
-    name: Deploy to Staging
-    runs-on: ubuntu-latest
-    environment: staging  # Staging environment protection rules apply
-    steps:
-      # Get the source code from repository
-      - uses: actions/checkout@v4
-      
-      # Authenticate with Azure using service principal credentials
-      - name: Azure Login
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-      
-      # Deploy container to Azure Container Apps in staging environment
-      - name: Deploy to Azure Container App - Staging
-        uses: azure/container-apps-deploy-action@v1
-        with:
-          appSourcePath: ${{ github.workspace }}
-          acrName: ${{ secrets.AZURE_CONTAINER_REGISTRY }}
-          acrUsername: ${{ secrets.AZURE_REGISTRY_USERNAME }}
-          acrPassword: ${{ secrets.AZURE_REGISTRY_PASSWORD }}
-          containerAppName: portal-app-staging  # Staging container app name
-          resourceGroup: portal-rg-staging  # Staging resource group
-          imageToDeploy: ${{ secrets.AZURE_CONTAINER_REGISTRY }}.azurecr.io/portal:${{ github.sha }}
-          targetPort: 5000
+    - name: Azure Login
+      uses: azure/login@v2
+      with:
+        client-id: ${{ secrets.AZURE_CLIENT_ID }}
+        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-  # Production deployment job
-  # Only runs when manually triggered with production environment selected
-  # Should have additional approval requirements configured in GitHub environment settings
-  deploy-prod:
-    if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'production' }}
-    name: Deploy to Production
-    runs-on: ubuntu-latest
-    environment: production  # Production environment with strict protection rules
-    steps:
-      # Get the source code from repository
-      - uses: actions/checkout@v4
-      
-      # Authenticate with Azure using service principal credentials
-      - name: Azure Login
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-      
-      # Deploy container to Azure Container Apps in production environment
-      - name: Deploy to Azure Container App - Production
-        uses: azure/container-apps-deploy-action@v1
-        with:
-          appSourcePath: ${{ github.workspace }}
-          acrName: ${{ secrets.AZURE_CONTAINER_REGISTRY }}
-          acrUsername: ${{ secrets.AZURE_REGISTRY_USERNAME }}
-          acrPassword: ${{ secrets.AZURE_REGISTRY_PASSWORD }}
-          containerAppName: portal-app-prod  # Production container app name
-          resourceGroup: portal-rg-prod  # Production resource group
-          imageToDeploy: ${{ secrets.AZURE_CONTAINER_REGISTRY }}.azurecr.io/portal:${{ github.sha }}
-          targetPort: 5000
+    - name: Deploy Infrastructure
+      uses: azure/arm-deploy@v2
+      with:
+        subscriptionId: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+        resourceGroupName: ${{ env.AZURE_RESOURCE_GROUP }}
+        template: ./bicep/main.bicep
+        parameters: ./bicep/parameters/dev.parameters.json
+        deploymentName: portal-dev-${{ github.run_number }}
+
+    - name: Get Container App URL
+      id: get-url
+      run: |
+        url=$(az containerapp show \
+          --name ${{ env.CONTAINER_APP_NAME }} \
+          --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+          --query "properties.configuration.ingress.fqdn" \
+          --output tsv)
+        echo "app-url=https://$url" >> $GITHUB_OUTPUT

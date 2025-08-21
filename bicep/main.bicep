@@ -18,6 +18,7 @@ module environment './modules/environment.bicep' = {
     location: location
     environmentName: environmentName
     logAnalyticsId: loganalytics.outputs.workspaceId
+    logAnalyticsResourceId: loganalytics.outputs.workspaceResourceId  // Add this line
   }
 }
 

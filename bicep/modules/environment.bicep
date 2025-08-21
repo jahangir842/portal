@@ -1,8 +1,9 @@
 param location string
 param environmentName string
 param logAnalyticsId string
+param logAnalyticsResourceId string  // Add this parameter
 
-resource containerAppEnv 'Microsoft.App/managedEnvironments@2025-01-01' = {
+resource containerAppEnv 'Microsoft.App/managedEnvironments@2022-03-01' = {  // Use 2022-03-01 instead of 2025-01-01
   name: environmentName
   location: location
   properties: {
@@ -10,6 +11,7 @@ resource containerAppEnv 'Microsoft.App/managedEnvironments@2025-01-01' = {
       destination: 'log-analytics'
       logAnalyticsConfiguration: {
         customerId: logAnalyticsId
+        sharedKey: listKeys(logAnalyticsResourceId, '2021-06-01').primarySharedKey  // Add this line
       }
     }
   }

@@ -172,11 +172,55 @@ output workspaceId string = logAnalytics.properties.customerId
 # 🚀 Deploy with PowerShell
 
 ```powershell
+New-AzResourceGroup -Name "devops-rg" -Location "eastus"
+```
+
+```powershell
 New-AzResourceGroupDeployment `
-  -Name "portal" `
+  -Name "portal0.1" `
   -ResourceGroupName "devops-rg" `
   -TemplateFile ./bicep/main.bicep `
   -TemplateParameterFile ./bicep/main.parameters.dev.json
+```
+
+# GitHub Actions CI/CD pipeline
+
+## Create Service Principle
+
+```bash
+az ad sp create-for-rbac \
+  --name "github-actions-portal" \
+  --role "Contributor" \
+  --scopes "/subscriptions/{subscription-id}/resourceGroups/devops-rg" \
+  --sdk-auth
+```
+This will output JSON credentials - save them for GitHub secrets.
+
+In your GitHub repository, go to Settings → Secrets and Variables → Actions, and add:
+
+```bash
+AZURE_CREDENTIALS - The JSON output from created Service Principle
+AZURE_SUBSCRIPTION_ID - Your Azure subscription ID
+AZURE_RESOURCE_GROUP - devops-rg
+DOCKER_USERNAME - Your Docker Hub username
+DOCKER_PASSWORD - Your Docker Hub password/token
+CONTAINER_REGISTRY - docker.io (or your ACR if using that)
+```
+
+## ARM Deployment Action
+
+https://github.com/Azure/arm-deploy
+
+## Custom domain names and free managed certificates in Azure
+https://learn.microsoft.com/en-us/azure/container-apps/custom-domains-managed-certificates?pivots=azure-portal
+
+## Custom domain names and bring your own certificates 
+https://learn.microsoft.com/en-us/azure/container-apps/custom-domains-certificates?tabs=general&pivots=azure-portal
+
+## Clear the Resources
+
+```powershell
+Remove-AzResourceGroup -Name "devops-rg"
 ```
 
 ---
