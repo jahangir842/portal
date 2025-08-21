@@ -173,7 +173,7 @@ output workspaceId string = logAnalytics.properties.customerId
 
 ```powershell
 New-AzResourceGroupDeployment `
-  -Name "flaskAppDeploymentDev" `
+  -Name "portal" `
   -ResourceGroupName "devops-rg" `
   -TemplateFile ./bicep/main.bicep `
   -TemplateParameterFile ./bicep/main.parameters.dev.json
