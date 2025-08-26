@@ -90,7 +90,7 @@ project-root/
    source venv/bin/activate  # On Windows use: venv\Scripts\activate
    ```
 
-3. Install dependencies:
+3. Install dependencies for the application:
 
    ```bash
    pip install -r requirements.txt
