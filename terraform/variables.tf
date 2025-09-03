@@ -31,3 +31,17 @@ variable "container_app_name" {
     default     = "portal-container-app"
   
 }
+
+variable "container_image" {
+    description = "The container image to deploy to the Container App."
+    type        = string
+    default     = "jahangir842/portal:109"
+  
+}
+
+variable "container_port" {
+    description = "The port on which the container listens."
+    type        = number
+    default     = 5000
+  
+}
