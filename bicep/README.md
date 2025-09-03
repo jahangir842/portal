@@ -1,362 +1,103 @@
-# 📂 Recommended folder structure
+# Bicep Infrastructure as Code
 
-```
-flask-project/
-│
-├── src/                           # Flask app code
-│   ├── app.py
-│   └── requirements.txt
-│
-├── bicep/                         # Infrastructure as Code
-│   ├── main.bicep                 # entry point for deployments
-│   ├── main.parameters.dev.json   # parameters for dev environment
-│   ├── main.parameters.prod.json  # parameters for prod environment
-│   │
-│   └── modules/                   # reusable building blocks
-│       ├── environment.bicep      # container app environment
-│       ├── containerapp.bicep     # container app definition
-│       └── loganalytics.bicep     # logging + monitoring
-│
-└── pipelines/                     # CI/CD definitions
-    └── deploy.yml
-```
+This repository contains **Bicep templates** to provision and manage Azure infrastructure for multiple application deployment targets.  
+Each subfolder represents a different Azure service where applications can be deployed.  
+Shared modules are reusable building blocks (e.g., networking, identity, monitoring).
 
 ---
 
-# 📜 `main.bicep` (entry point)
+## 📂 Folder Structure
 
-```bicep
-param location string = resourceGroup().location
-param containerAppName string
-param containerImage string
-param environmentName string
-param logAnalyticsName string
-
-module loganalytics './modules/loganalytics.bicep' = {
-  name: 'loganalytics'
-  params: {
-    location: location
-    workspaceName: logAnalyticsName
-  }
-}
-
-module environment './modules/environment.bicep' = {
-  name: 'environment'
-  params: {
-    location: location
-    environmentName: environmentName
-    logAnalyticsId: loganalytics.outputs.workspaceId
-  }
-}
-
-module containerapp './modules/containerapp.bicep' = {
-  name: 'containerapp'
-  params: {
-    location: location
-    appName: containerAppName
-    environmentId: environment.outputs.environmentId
-    containerImage: containerImage
-  }
-}
+```bash
+bicep/
+  modules/        # Shared infra components (network, identity, monitoring, storage, log analytics, etc.)
+  aca/            # Azure Container Apps deployment
+  aci/            # Azure Container Instances deployment
+  aks/            # Azure Kubernetes Service deployment + Kubernetes manifests/Helm
+  app-service/    # Azure App Service (Web App or Web App for Containers) deployment
+  functions/      # Azure Functions (serverless) deployment
+  vmss/           # Virtual Machine Scale Sets deployment
 ```
+
+## 📂 Rule of Thumb
+
+- bicep/modules/ → shared modules
+
+    - Can be used across multiple services (e.g., VNet, identity, storage, monitoring).
+
+- Inside each service folder (e.g., bicep/aks/modules/) → service-specific modules
+
+    - Only make sense for that service (e.g., AKS node pool, App Service Plan, ACA revision).
+
 
 ---
 
-# 📜 `modules/environment.bicep`
+## 🗂 Folder Details
 
-```bicep
-param location string
-param environmentName string
-param logAnalyticsId string
+### 1. `modules/`
 
-resource containerAppEnv 'Microsoft.App/managedEnvironments@2022-03-01' = {
-  name: environmentName
-  location: location
-  properties: {
-    appLogsConfiguration: {
-      destination: 'log-analytics'
-      logAnalyticsConfiguration: {
-        customerId: logAnalyticsId
-      }
-    }
-  }
-}
+* Contains reusable Bicep modules:
 
-output environmentId string = containerAppEnv.id
-```
+  * `network.bicep` → VNet, Subnets
+  * `identity.bicep` → Managed Identity, Role Assignments
+  * `monitoring.bicep` → Log Analytics, App Insights
+  * `storage.bicep` → Storage Accounts
 
----
+### 2. `aca/`
 
-# 📜 `modules/containerapp.bicep`
+* Infrastructure for **Azure Container Apps**
+* Defines environment, container apps, scaling rules, secrets, and ingress
 
-```bicep
-param location string
-param appName string
-param environmentId string
-param containerImage string
+### 3. `aci/`
 
-resource containerApp 'Microsoft.App/containerApps@2022-03-01' = {
-  name: appName
-  location: location
-  properties: {
-    managedEnvironmentId: environmentId
-    configuration: {
-      ingress: {
-        external: true
-        targetPort: 5000
-      }
-    }
-    template: {
-      containers: [
-        {
-          name: appName
-          image: containerImage
-          resources: {
-            cpu: 0.5
-            memory: '1Gi'
-          }
-        }
-      ]
-    }
-  }
-}
-```
+* Infrastructure for **Azure Container Instances**
+* Defines single-container or multi-container groups
+* Useful for quick jobs, test environments, or lightweight deployments
+
+### 4. `aks/`
+
+* Infrastructure for **Azure Kubernetes Service**
+* Defines AKS cluster, node pools, identity, networking, and monitoring
+* Includes `k8s/` subfolder for Kubernetes manifests (Deployments, Services, Ingress) or Helm charts
+
+### 5. `app-service/`
+
+* Infrastructure for **Azure App Service (Web Apps)**
+* Supports code-based apps and container-based apps
+* Includes App Service Plan + Web App definitions
+
+### 6. `functions/`
+
+* Infrastructure for **Azure Functions**
+* Defines Function App, Storage, and Hosting Plan
+* Suitable for event-driven or serverless workloads
+
+### 7. `vmss/`
+
+* Infrastructure for **Azure Virtual Machine Scale Sets (VMSS)**
+* Defines VMSS, load balancer, autoscaling rules, and extensions
+* Can be used for containerized workloads (via VM extension to install Docker)
 
 ---
 
-# 📜 `modules/loganalytics.bicep`
+## 🚀 How to Deploy
 
-```bicep
-param location string
-param workspaceName string
-
-resource logAnalytics 'Microsoft.OperationalInsights/workspaces@2021-06-01' = {
-  name: workspaceName
-  location: location
-  properties: {}
-  sku: {
-    name: 'PerGB2018'
-  }
-}
-
-output workspaceId string = logAnalytics.properties.customerId
-```
-
----
-
-# 📜 Example parameters file (`main.parameters.dev.json`)
-
-```json
-{
-  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
-  "contentVersion": "1.0.0.0",
-  "parameters": {
-    "containerAppName": {
-      "value": "flask-api-dev"
-    },
-    "containerImage": {
-      "value": "mydockerhubuser/flaskapi:latest"
-    },
-    "environmentName": {
-      "value": "dev-env"
-    },
-    "logAnalyticsName": {
-      "value": "dev-logs"
-    }
-  }
-}
-```
-
----
-
-# 🚀 Deploy with PowerShell
-
-```powershell
-New-AzResourceGroup -Name "devops-rg" -Location "eastus"
-```
+### 1. Deploy Infrastructure with Bicep
 
 ```powershell
 New-AzResourceGroupDeployment `
-  -Name "portal0.1" `
-  -ResourceGroupName "devops-rg" `
-  -TemplateFile ./bicep/main.bicep `
-  -TemplateParameterFile ./bicep/main.parameters.dev.json
+  -ResourceGroupName "<rg-name>" `
+  -TemplateFile "bicep/<service>/main.bicep" `
+  -TemplateParameterFile "params.json"
 ```
 
-# GitHub Actions CI/CD pipeline
-
-## Create Service Principle
-
-```bash
-az ad sp create-for-rbac \
-  --name "github-actions-portal" \
-  --role "Contributor" \
-  --scopes "/subscriptions/{subscription-id}/resourceGroups/devops-rg" \
-  --sdk-auth
-```
-This will output JSON credentials - save them for GitHub secrets.
-
-In your GitHub repository, go to Settings → Secrets and Variables → Actions, and add:
-
-```bash
-AZURE_CREDENTIALS - The JSON output from created Service Principle
-AZURE_SUBSCRIPTION_ID - Your Azure subscription ID
-AZURE_RESOURCE_GROUP - devops-rg
-DOCKER_USERNAME - Your Docker Hub username
-DOCKER_PASSWORD - Your Docker Hub password/token
-CONTAINER_REGISTRY - docker.io (or your ACR if using that)
-```
-
-## ARM Deployment Action
-
-https://github.com/Azure/arm-deploy
-
-## Custom domain names and free managed certificates in Azure
-https://learn.microsoft.com/en-us/azure/container-apps/custom-domains-managed-certificates?pivots=azure-portal
-
-## Custom domain names and bring your own certificates 
-https://learn.microsoft.com/en-us/azure/container-apps/custom-domains-certificates?tabs=general&pivots=azure-portal
-
-## Clear the Resources
-
-```powershell
-Remove-AzResourceGroup -Name "devops-rg"
-```
+* Replace `<service>` with `aca`, `aks`, `app-service`, `aci`, `functions`, or `vmss`.
 
 ---
 
-👉 This structure is **modular**, **clean**, and **ready for CI/CD pipelines**.
+## ✅ Best Practices
 
-* In dev → use `main.parameters.dev.json`
-* In prod → use `main.parameters.prod.json`
-
----
-
-
-#########################################
-       With KEDA Rules
-#########################################
-
-
-let’s extend the **`containerapp.bicep`** module to support **KEDA-based autoscaling rules**.
-
-Azure Container Apps supports **KEDA (Kubernetes Event-Driven Autoscaling)** natively, so you can scale on HTTP requests, CPU, memory, or even external triggers (like Service Bus, Kafka, etc.).
-
----
-
-## 📜 Updated `modules/containerapp.bicep`
-
-```bicep
-param location string
-param appName string
-param environmentId string
-param containerImage string
-
-resource containerApp 'Microsoft.App/containerApps@2022-03-01' = {
-  name: appName
-  location: location
-  properties: {
-    managedEnvironmentId: environmentId
-    configuration: {
-      ingress: {
-        external: true
-        targetPort: 5000
-      }
-    }
-    template: {
-      containers: [
-        {
-          name: appName
-          image: containerImage
-          resources: {
-            cpu: 0.5
-            memory: '1Gi'
-          }
-        }
-      ]
-      scale: {
-        minReplicas: 1
-        maxReplicas: 5
-        rules: [
-          {
-            name: 'http-scaling'
-            custom: {
-              type: 'http'
-              metadata: {
-                concurrentRequests: '50'
-              }
-            }
-          }
-          {
-            name: 'cpu-scaling'
-            custom: {
-              type: 'cpu'
-              metadata: {
-                type: 'Utilization'
-                value: '70'
-              }
-            }
-          }
-        ]
-      }
-    }
-  }
-}
-```
-
----
-
-## 🔑 Explanation of the KEDA rules
-
-* **minReplicas: 1** → always keep at least 1 instance running
-* **maxReplicas: 5** → can scale up to 5 instances
-* **Rule 1: HTTP scaling** → If a container instance has more than `50` concurrent HTTP requests, KEDA adds replicas.
-* **Rule 2: CPU scaling** → If CPU usage goes above `70%`, it triggers scaling.
-
-You can add **multiple rules** — scaling happens if **any rule is triggered**.
-
----
-
-## 📜 Example Parameters File (dev)
-
-```json
-{
-  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
-  "contentVersion": "1.0.0.0",
-  "parameters": {
-    "containerAppName": {
-      "value": "flask-api-dev"
-    },
-    "containerImage": {
-      "value": "mydockerhubuser/flaskapi:latest"
-    },
-    "environmentName": {
-      "value": "dev-env"
-    },
-    "logAnalyticsName": {
-      "value": "dev-logs"
-    }
-  }
-}
-```
-
----
-
-## 🚀 Deploy with PowerShell
-
-```powershell
-New-AzResourceGroupDeployment `
-  -Name "flaskAppDeploymentDev" `
-  -ResourceGroupName "devops-rg" `
-  -TemplateFile ./bicep/main.bicep `
-  -TemplateParameterFile ./bicep/main.parameters.dev.json
-```
-
----
-
-✅ With this, your **Flask API** will automatically scale based on:
-
-* Incoming HTTP load
-* CPU utilization
-
----
+* Keep **common infra in `modules/`** and reuse across services.
+* Use **consistent naming conventions** across Bicep templates.
+* Parameterize environment-specific values (dev, test, prod) in `params.json`.
+* Deploy infra via **Azure DevOps or GitHub Actions** pipelines with PowerShell tasks.
