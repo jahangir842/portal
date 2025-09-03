@@ -42,12 +42,12 @@ resource "azurerm_container_app" "cont-app" {
   name                         = var.container_app_name
   container_app_environment_id = azurerm_container_app_environment.cont-env.id
   resource_group_name          = var.resource_group_name
-  revision_mode                = "Single"
+  revision_mode                = "Multiple"
 
   template {
     container {
-      name   = "examplecontainerapp"
-      image  = "jahangir842/portal:latest"
+      name   = "${var.container_app_name}-container"
+      image  = var.container_image
       cpu    = 0.25
       memory = "0.5Gi"
     }
@@ -55,14 +55,20 @@ resource "azurerm_container_app" "cont-app" {
 
   ingress {
     external_enabled           = true
-    target_port                = 5000
+    target_port                = var.container_port
     transport                  = "auto"
     allow_insecure_connections = false
     client_certificate_mode    = "ignore"
 
     traffic_weight {
+      revision_suffix = "blue"
       latest_revision = true
-      percentage      = 100
+      percentage      = 50
+    }
+    traffic_weight {
+      revision_suffix = "green"
+      latest_revision = false
+      percentage    = 50
     }
   }
 }
