@@ -15,7 +15,6 @@ __pycache__/
 htmlcov/
 
 # VS Code settings
-.vscode/
 
 # Certificates
 certs/
@@ -35,3 +34,7 @@ terraform/.terraform
 # Terraform local files
 .terraform/
 **/.terraform/*
+branch_structure.json
+temp_auto_push.bat
+temp_interactive_push.bat
+.gitignore
