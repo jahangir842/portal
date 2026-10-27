@@ -29,5 +29,4 @@ certs/*.crt
 # System files
 .DS_Store
 Thumbs.db
-.gitignore
 branch_structure.json
